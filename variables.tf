@@ -1,24 +1,24 @@
 variable "aws_region" {
   description = "value"
-  default     = string
+  type     = string
 }
 variable "project_name" {
   description = "value"
-  default = string
+  type = string
 }
 variable "node_size" {
   description = "value"
-  default = string
+  type = string
 }
 variable "node_number" {
   description = "value"
-  default = number
+  type = number
 }
 variable "ami_type" {
   description = "value"
-  default = string
+  type = string
 }
 variable "node_type" {
   description = "value"
-  default = string
+  type = string
 }
