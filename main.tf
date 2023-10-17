@@ -143,6 +143,9 @@ module "eks" {
     vpc-cni = {
       most_recent = true
     }
+    aws-ebs-csi-driver = {
+      most_recent = true
+    }
     coredns = {
       most_recent = true
       configuration_values = jsonencode({
@@ -166,14 +169,14 @@ module "eks" {
   }
 
   eks_managed_node_groups = {
-    dev = {
-      instance_types             = [var.node_size]
-      min_size                   = var.node_number - 1
-      max_size                   = var.node_number
-      desired_size               = var.node_number
-      capacity_type              = var.node_type
+    "node-${var.project_name}" = {
+      instance_types = [var.node_size]
+      min_size       = var.node_number - 1
+      max_size       = var.node_number
+      desired_size   = var.node_number
+      capacity_type  = var.node_type
       # use_custom_launch_template = false
-      disk_size                  = var.disk_size
+      disk_size = var.disk_size
     }
   }
 
@@ -192,71 +195,6 @@ module "eks" {
   ]
 }
 
-# module "eks_managed_node_group" {
-#   source          = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-#   name            = "separate-eks-mng"
-#   cluster_name    = local.cluster_name
-#   cluster_version = var.cluster_version
-#   create_iam_role = true
-#   subnet_ids      = module.vpc.private_subnets
-
-#   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
-#   vpc_security_group_ids            = [module.eks.node_security_group_id]
-#   instance_types                    = [var.node_size]
-#   min_size                          = var.node_number - 1
-#   max_size                          = var.node_number
-#   desired_size                      = var.node_number
-#   capacity_type                     = var.node_type
-#   use_custom_launch_template        = false
-#   disk_size                         = var.disk_size
-# }
-
-# Install CSI Driver to EKS
-# Resource ServiceRole, IAM OIDC, IAM Role
-# https://aws.amazon.com/blogs/containers/amazon-ebs-csi-driver-is-now-generally-available-in-amazon-eks-add-ons/ 
-data "aws_iam_policy" "ebs_csi_policy" {
-  arn = "arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy"
-}
-
-module "irsa-ebs-csi" {
-  source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
-  # version = "4.7.0"
-
-  create_role                   = true
-  role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
-  provider_url                  = module.eks.oidc_provider
-  role_policy_arns              = [data.aws_iam_policy.ebs_csi_policy.arn]
-  oidc_fully_qualified_subjects = ["system:serviceaccount:kube-system:ebs-csi-controller-sa"]
-}
-
-resource "aws_eks_addon" "ebs-csi" {
-  cluster_name = module.eks.cluster_name
-  addon_name   = "aws-ebs-csi-driver"
-  # addon_version            = "v1.20.0-eksbuild.1"
-  service_account_role_arn = module.irsa-ebs-csi.iam_role_arn
-  tags = {
-    "eks_addon" = "ebs-csi"
-    "terraform" = "true"
-  }
-}
-
-# Install load Balancer Controller to EKS
-# Resource ServiceRole, IAM OIDC, IAM Role
-# module "lb-controller" {
-#   source = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-#   depends_on = [ module.eks ]
-
-#   role_name                              = "AmazonEKSTFLBCRole-${module.eks.cluster_name}"
-#   attach_load_balancer_controller_policy = true
-
-#   oidc_providers = {
-#     main = {
-#       provider_arn               = module.eks.oidc_provider_arn
-#       namespace_service_accounts = ["kube-system:aws-load-balancer-controller"]
-#     }
-#   }
-# }
-
 provider "kubernetes" {
   host = module.eks.cluster_endpoint
   # cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
@@ -264,19 +202,14 @@ provider "kubernetes" {
   token                  = data.aws_eks_cluster_auth.cluster.token
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-    # api_version = "k8s.io/client-go"
-    args    = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--profile", var.profile]
-    command = "aws"
-    # command = <<EOT
-    #     aws eks get-token --cluster-name ${module.eks.cluster_name} --profile ${var.profile}
-    # EOT
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--profile", var.profile]
+    command     = "aws"
   }
 }
 
 provider "helm" {
   kubernetes {
-    host = module.eks.cluster_endpoint
-    # cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+    host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(data.aws_eks_cluster.cluster.certificate_authority.0.data)
     token                  = data.aws_eks_cluster_auth.cluster.token
     exec {
@@ -284,14 +217,6 @@ provider "helm" {
       args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--profile", var.profile]
       command     = "aws"
     }
-    # exec {
-    #   # api_version = "client.authentication.k8s.io/v1beta1"
-    #   api_version = "k8s.io/client-go"
-    #   command     = <<EOT
-    #     aws eks get-token --cluster-name ${module.eks.cluster_name} --profile ${var.profile}
-    #     aws eks update-kubeconfig --name ${module.eks.cluster_name} --profile ${var.profile}
-    #   EOT
-    # }
   }
 }
 

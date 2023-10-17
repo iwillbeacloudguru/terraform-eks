@@ -32,7 +32,8 @@ variable "settings" {
 }
 variable "profile" {
   description = "value"
-  default = "AdministratorAccess-899363120725"
+  type = string
+  default = "default"
 }
 variable "cluster_version" {
   description = "value"

@@ -2,6 +2,9 @@ aws_region   = "ap-southeast-1"
 project_name = "bgp-development"
 cluster_version = "1.28"
 
+# Comment this if you don't use named profile in aws configure
+profile = "AdministratorAccess-899363120725"
+
 # Uncomment this section
 # Estimated EC2 Monthly cost: 12,406.54 USD
 # Estimated EC2 10 Days cost: 4,135.51 USD
