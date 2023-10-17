@@ -74,9 +74,9 @@ Before using this Terraform script, make sure you have the following prerequisit
    or
    aws eks update kubeconfig --name <cluster-name> --profile <aws configure profile>
    ```
-7. Try to use Kube API
+7. Try to use the Kubernetes API to get information about your workload. You can beautify the results with kubectl:
    ```bash
-   kubectl get all -A
+   kubectl get all -A -o wide
    ```
 
 ## Deploy your workload and ingress
