@@ -22,3 +22,15 @@ variable "node_type" {
   description = "value"
   type = string
 }
+variable "disk_size" {
+  description = "value"
+  type = number
+}
+variable "settings" {
+  default     = {}
+  description = "Additional settings which will be passed to the Helm chart values."
+}
+variable "profile" {
+  description = "value"
+  default = "AdministratorAccess-899363120725"
+}
