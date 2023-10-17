@@ -96,7 +96,6 @@ resource "aws_security_group" "eks" {
   name        = "{var.project_name}-vpc"
   description = "Allow All traffic"
   vpc_id      = module.vpc.default_vpc_id
-  depends_on  = [module.vpc]
 
   ingress {
     description      = "World"
@@ -126,10 +125,9 @@ resource "aws_security_group" "eks" {
 module "eks" {
   source = "terraform-aws-modules/eks/aws"
   # version    = "19.15.3"
-  depends_on = [module.vpc, aws_security_group.eks]
 
   cluster_name    = local.cluster_name
-  cluster_version = "1.28"
+  cluster_version = var.cluster_version
 
   vpc_id                          = module.vpc.vpc_id
   subnet_ids                      = module.vpc.private_subnets
@@ -166,6 +164,7 @@ module "eks" {
       })
     }
   }
+
   eks_managed_node_groups = {
     dev = {
       instance_types             = [var.node_size]
@@ -173,7 +172,7 @@ module "eks" {
       max_size                   = var.node_number
       desired_size               = var.node_number
       capacity_type              = var.node_type
-      use_custom_launch_template = false
+      # use_custom_launch_template = false
       disk_size                  = var.disk_size
     }
   }
@@ -194,11 +193,13 @@ module "eks" {
 }
 
 # module "eks_managed_node_group" {
-#   source                            = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
-#   name                              = "separate-eks-mng"
-#   cluster_name                      = local.cluster_name
-#   cluster_version                   = "1.27"
-#   subnet_ids                        = module.vpc.private_subnets
+#   source          = "terraform-aws-modules/eks/aws//modules/eks-managed-node-group"
+#   name            = "separate-eks-mng"
+#   cluster_name    = local.cluster_name
+#   cluster_version = var.cluster_version
+#   create_iam_role = true
+#   subnet_ids      = module.vpc.private_subnets
+
 #   cluster_primary_security_group_id = module.eks.cluster_primary_security_group_id
 #   vpc_security_group_ids            = [module.eks.node_security_group_id]
 #   instance_types                    = [var.node_size]
@@ -221,8 +222,6 @@ module "irsa-ebs-csi" {
   source = "terraform-aws-modules/iam/aws//modules/iam-assumable-role-with-oidc"
   # version = "4.7.0"
 
-  depends_on = [module.eks]
-
   create_role                   = true
   role_name                     = "AmazonEKSTFEBSCSIRole-${module.eks.cluster_name}"
   provider_url                  = module.eks.oidc_provider
@@ -231,7 +230,6 @@ module "irsa-ebs-csi" {
 }
 
 resource "aws_eks_addon" "ebs-csi" {
-  depends_on   = [module.eks]
   cluster_name = module.eks.cluster_name
   addon_name   = "aws-ebs-csi-driver"
   # addon_version            = "v1.20.0-eksbuild.1"
@@ -298,7 +296,6 @@ provider "helm" {
 }
 
 module "alb_controller" {
-  depends_on                       = [module.eks]
   source                           = "./modules/alb-controller"
   cluster_name                     = module.eks.cluster_name
   cluster_identity_oidc_issuer     = module.eks.oidc_provider
