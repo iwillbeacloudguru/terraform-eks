@@ -167,16 +167,46 @@ module "eks" {
       })
     }
   }
+  
+  eks_managed_node_group_defaults = {
+    capacity_type  = var.node_type
+    instance_types = [var.node_size]
+    disk_size      = var.disk_size
+  }
 
   eks_managed_node_groups = {
     "node-${var.project_name}" = {
-      instance_types             = [var.node_size]
+      # create_launch_template     = false
+      # launch_template_name       = ""
       min_size                   = var.node_number - 1
       max_size                   = var.node_number
       desired_size               = var.node_number
-      capacity_type              = var.node_type
       use_custom_launch_template = false
-      disk_size                  = var.disk_size
+      # labels                     = { Name = "node-${var.project_name}" }
+      block_device_mappings = {
+        xvda = {
+          device_name = "/dev/xvda"
+          ebs = {
+            volume_size           = 32
+            volume_type           = "gp3"
+            iops                  = 3000
+            throughput            = 150
+            encrypted             = true
+            delete_on_termination = true
+          }
+        },
+        xvdb = {
+          device_name = "/dev/xvdb"
+          ebs = {
+            volume_size           = var.disk_size
+            volume_type           = "gp3"
+            iops                  = 3000
+            throughput            = 150
+            encrypted             = true
+            delete_on_termination = true
+          }
+        }
+      }
     }
   }
 
