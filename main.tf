@@ -68,14 +68,14 @@ module "vpc" {
 
   name = "${var.project_name}-vpc"
 
-  cidr = "10.99.0.0/16"
+  cidr = var.vpc_cidr
   azs  = slice(data.aws_availability_zones.available.names, 0, 3)
 
-  private_subnets = ["10.99.1.0/24", "10.99.2.0/24", "10.99.3.0/24"]
-  public_subnets  = ["10.99.4.0/24", "10.99.5.0/24", "10.99.6.0/24"]
+  private_subnets = var.private_subnets
+  public_subnets  = var.public_subnets
 
-  enable_nat_gateway   = true
-  single_nat_gateway   = true
+  enable_nat_gateway   = var.is_nat_enabled
+  single_nat_gateway   = var.is_single_nat_across_az
   enable_dns_hostnames = true
   enable_dns_support   = true
 
@@ -170,13 +170,13 @@ module "eks" {
 
   eks_managed_node_groups = {
     "node-${var.project_name}" = {
-      instance_types = [var.node_size]
-      min_size       = var.node_number - 1
-      max_size       = var.node_number
-      desired_size   = var.node_number
-      capacity_type  = var.node_type
-      # use_custom_launch_template = false
-      disk_size = var.disk_size
+      instance_types             = [var.node_size]
+      min_size                   = var.node_number - 1
+      max_size                   = var.node_number
+      desired_size               = var.node_number
+      capacity_type              = var.node_type
+      use_custom_launch_template = false
+      disk_size                  = var.disk_size
     }
   }
 
