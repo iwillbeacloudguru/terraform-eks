@@ -1,5 +1,5 @@
 aws_region      = "ap-southeast-1"
-project_name    = "porames-ktbg"
+project_name    = "XXX"
 cluster_version = "1.28"
 
 vpc_cidr        = "10.69.0.0/16"
@@ -10,18 +10,9 @@ is_nat_enabled = true
 is_single_nat_across_az = true
 
 # Comment this if you don't use named profile in aws configure
-profile = "AdministratorAccess-899363120725"
+profile = "AdministratorAccess-XXX"
 
-# Uncomment this section
-# Estimated EC2 Monthly cost: 12,406.54 USD
-# Estimated EC2 10 Days cost: 4,135.51 USD
-# Total vCPU and Memory: 296 vCPU 592 GB
-# Total Disk: 18.94 TB
-# node_size = "c6i.2xlarge"
-# node_number = 37
-# disk_size   = 512
-
-# Comment this section
+# Adjust sizing via this section
 node_size   = "t3.medium"
 node_number = 2
 disk_size   = 32
