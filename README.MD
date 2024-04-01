@@ -11,7 +11,7 @@ Before using this Terraform script, make sure you have the following prerequisit
 - AWS CLI configured with the necessary credentials.
 - A basic understanding of Terraform and AWS services.
 
-## Cost
+## Cost (Deprecated)
 
 - Estimated EC2 Monthly cost: 12,406.54 USD
 - Estimated EC2 10 Days cost: 4,135.51 USD
@@ -32,22 +32,13 @@ Before using this Terraform script, make sure you have the following prerequisit
    ```bash
    ### terraform.tfvars ###
    aws_region = "ap-southeast-1"
-   project_name = "bgp-development"
+   project_name = "eks-dev"
    cluster_version = "1.28"
 
    # Comment this if you don't use named profile in aws configure
    profile = "AdministratorAccess-xxxxx"
 
-   # Uncomment this section
-   # Estimated EC2 Monthly cost: 12,406.54 USD
-   # Estimated EC2 10 Days cost: 4,135.51 USD
-   # Total vCPU and Memory: 296 vCPU 592 GB
-   # Total Disk: 18.94 TB
-   # node_size = "c6i.2xlarge"
-   # node_number = 37
-   # disk_size = 512
-
-   # Comment this section
+   # Adjust Sizing in this section
    node_size = "t3.large"
    node_number = 3
    disk_size = 32
