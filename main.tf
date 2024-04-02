@@ -214,15 +214,19 @@ module "eks" {
   # create_aws_auth_configmap = false
   # manage_aws_auth_configmap = false
 
-  aws_auth_accounts = ["${data.aws_caller_identity.current.account_id}"]
+  enable_cluster_creator_admin_permissions = true
+  create_iam_role                          = true
+  iam_role_name                            = "kube-master-role"
 
-  aws_auth_roles = [
-    {
-      rolearn  = aws_iam_role.kube-master.arn
-      username = aws_iam_role.kube-master.name
-      groups   = ["system:masters"]
-    }
-  ]
+  # aws_auth_accounts = ["${data.aws_caller_identity.current.account_id}"]
+
+  # aws_auth_roles = [
+  #   {
+  #     rolearn  = aws_iam_role.kube-master.arn
+  #     username = aws_iam_role.kube-master.name
+  #     groups   = ["system:masters"]
+  #   }
+  # ]
 }
 
 provider "kubernetes" {
