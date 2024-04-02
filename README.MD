@@ -57,13 +57,13 @@ Before using this Terraform script, make sure you have the following prerequisit
    ```
 5. Apply the configuration:
    ```bash
-   teraform apply "tfout" --auto-approve
+   terraform apply "tfout"
    ```
 6. After provisioning is complete, you can access your EKS cluster and manage it using kubectl and Helm. Make sure to configure your kubectl and Helm with the provided credentials in your Terraform configuration.
    ```bash
-   aws eks update kubeconfig --name <cluster-name>
+   aws eks update-kubeconfig --name <cluster-name>
    or
-   aws eks update kubeconfig --name <cluster-name> --profile <aws configure profile>
+   aws eks update-kubeconfig --name <cluster-name> --profile <aws configure profile>
    ```
 7. Try to use the Kubernetes API to get information about your workload. You can beautify the results with kubectl:
    ```bash
